@@ -8,14 +8,14 @@
 	padding: 0 5px;
 }
 
+.sidebarOption:hover {
+	color: white;
+}
+
 .sidebarOption > p {
 	margin-top: 10px;
 	margin-left: 10px;
 	font-size: 14px;
-}
-
-.sidebarOption:hover {
-	color: white;
 }
 
 .sidebarOption__icon {

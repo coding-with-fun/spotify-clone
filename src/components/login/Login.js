@@ -1,15 +1,17 @@
 import React from 'react';
 import './Login.css';
-import logo from '../../images/spotify_logo.jpg';
 import { loginURL } from '../../spotify';
 
-const Login = () => {
+function Login() {
 	return (
 		<div className='login'>
-			<img src={logo} alt='Spotify Logo' />
-			<a href={loginURL}>LOGIN WITH SPOTIFY</a>
+			<img
+				src='https://getheavy.com/wp-content/uploads/2019/12/spotify2019-830x350.jpg'
+				alt=''
+			/>
+			<a href={loginURL}>LOGIN TO SPOTIFY</a>
 		</div>
 	);
-};
+}
 
 export default Login;

@@ -1,54 +1,139 @@
-import React from 'react';
-import './Footer.css';
-
+import React, { useEffect } from 'react';
+import { useDataProviderValue } from '../../contexts/DataContext';
 import PlayCircleOutlineIcon from '@material-ui/icons/PlayCircleOutline';
 import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
 import SkipNextIcon from '@material-ui/icons/SkipNext';
 import ShuffleIcon from '@material-ui/icons/Shuffle';
 import RepeatIcon from '@material-ui/icons/Repeat';
-
-import { Grid, Slider } from '@material-ui/core';
-import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
 import VolumeDownIcon from '@material-ui/icons/VolumeDown';
+import PauseCircleOutlineIcon from '@material-ui/icons/PauseCircleOutline';
+import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
+import './Footer.css';
+import { Grid, Slider } from '@material-ui/core';
 
-const Footer = () => {
+function Footer({ spotify }) {
+	const [{ item, playing }, dispatch] = useDataProviderValue();
+
+	useEffect(() => {
+		spotify.getMyCurrentPlaybackState().then((r) => {
+			console.log(r);
+
+			dispatch({
+				type: 'SET_PLAYING',
+				playing: r.is_playing,
+			});
+
+			dispatch({
+				type: 'SET_ITEM',
+				item: r.item,
+			});
+		});
+		// eslint-disable-next-line
+	}, [spotify]);
+
+	const handlePlayPause = () => {
+		if (playing) {
+			spotify.pause();
+			dispatch({
+				type: 'SET_PLAYING',
+				playing: false,
+			});
+		} else {
+			spotify.play();
+			dispatch({
+				type: 'SET_PLAYING',
+				playing: true,
+			});
+		}
+	};
+
+	const skipNext = () => {
+		spotify.skipToNext();
+		spotify.getMyCurrentPlayingTrack().then((r) => {
+			dispatch({
+				type: 'SET_ITEM',
+				item: r.item,
+			});
+			dispatch({
+				type: 'SET_PLAYING',
+				playing: true,
+			});
+		});
+	};
+
+	const skipPrevious = () => {
+		spotify.skipToPrevious();
+		spotify.getMyCurrentPlayingTrack().then((r) => {
+			dispatch({
+				type: 'SET_ITEM',
+				item: r.item,
+			});
+			dispatch({
+				type: 'SET_PLAYING',
+				playing: true,
+			});
+		});
+	};
+
 	return (
-		<div className='footer'>
-			<div className='footer__left'>
-				<img
-					className='footer__albumLogo'
-					src='https://upload.wikimedia.org/wikipedia/commons/e/e8/2018-12-20-Turkish_pastry_with_cream_filling-1253.jpg'
-					alt=''
-				/>
-				<div className='footer__songInfo'>
-					<h4>Yeah!</h4>
-					<p>Arijit</p>
+		<>
+			{item ? (
+				<div className='footer'>
+					<div className='footer__left'>
+						<img
+							className='footer__albumLogo'
+							src={item?.album.images[0].url}
+							alt={item?.name || 'Song'}
+						/>
+						{item ? (
+							<div className='footer__songInfo'>
+								<h4>{item.name}</h4>
+								<p>{item.artists.map((artist) => artist.name).join(', ')}</p>
+							</div>
+						) : (
+							<div className='footer__songInfo'>
+								<h4>No song is playing</h4>
+								<p>...</p>
+							</div>
+						)}
+					</div>
+
+					<div className='footer__center'>
+						<ShuffleIcon className='footer__green' />
+						<SkipPreviousIcon onClick={skipNext} className='footer__icon' />
+						{playing ? (
+							<PauseCircleOutlineIcon
+								onClick={handlePlayPause}
+								fontSize='large'
+								className='footer__icon'
+							/>
+						) : (
+							<PlayCircleOutlineIcon
+								onClick={handlePlayPause}
+								fontSize='large'
+								className='footer__icon'
+							/>
+						)}
+						<SkipNextIcon onClick={skipPrevious} className='footer__icon' />
+						<RepeatIcon className='footer__green' />
+					</div>
+					<div className='footer__right'>
+						<Grid container spacing={2}>
+							<Grid item>
+								<PlaylistPlayIcon />
+							</Grid>
+							<Grid item>
+								<VolumeDownIcon />
+							</Grid>
+							<Grid item xs>
+								<Slider aria-labelledby='continuous-slider' />
+							</Grid>
+						</Grid>
+					</div>
 				</div>
-			</div>
-
-			<div className='footer__center'>
-				<ShuffleIcon className='footer__green' />
-				<SkipPreviousIcon className='footer__icon' />
-				<PlayCircleOutlineIcon fontSize='large' className='footer__icon' />
-				<SkipNextIcon className='footer__icon' />
-				<RepeatIcon className='footer__green' />
-			</div>
-
-			<div className='footer__right'>
-				<Grid container spacing={2}>
-					<Grid item>
-						<PlaylistPlayIcon className='footer__icon' />
-					</Grid>
-					<Grid item>
-						<VolumeDownIcon className='footer__icon' />
-					</Grid>
-					<Grid item xs>
-						<Slider aria-labelledby='continuous-slider' />
-					</Grid>
-				</Grid>
-			</div>
-		</div>
+			) : null}
+		</>
 	);
-};
+}
 
 export default Footer;
