@@ -9,7 +9,7 @@ export const initialState = {
 };
 
 const rootReducer = (state, action) => {
-	console.log(action);
+	// console.log(action);
 	switch (action.type) {
 		case 'SET_USER':
 			return {
