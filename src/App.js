@@ -1,26 +1,71 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useEffect } from 'react';
+import SpotifyWebApi from 'spotify-web-api-js';
+import { useDataProviderValue } from './contexts/DataContext';
+import Player from './components/player/Player';
+import { getTokenFromUrl } from './spotify';
 import './App.css';
+import Login from './components/login/Login';
+
+const s = new SpotifyWebApi();
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+	const [{ token }, dispatch] = useDataProviderValue();
+
+	useEffect(() => {
+		// Set token
+		const hash = getTokenFromUrl();
+		// window.location.hash = '';
+		let _token = hash.access_token;
+
+		if (_token) {
+			s.setAccessToken(_token);
+
+			dispatch({
+				type: 'SET_TOKEN',
+				token: _token,
+			});
+
+			s.getPlaylist('37i9dQZEVXcW84WxQE25w2').then((response) =>
+				dispatch({
+					type: 'SET_DISCOVER_WEEKLY',
+					discover_weekly: response,
+				}),
+			);
+
+			s.getMyTopArtists().then((response) =>
+				dispatch({
+					type: 'SET_TOP_ARTISTS',
+					top_artists: response,
+				}),
+			);
+
+			dispatch({
+				type: 'SET_SPOTIFY',
+				spotify: s,
+			});
+
+			s.getMe().then((user) => {
+				dispatch({
+					type: 'SET_USER',
+					user,
+				});
+			});
+
+			s.getUserPlaylists().then((playlists) => {
+				dispatch({
+					type: 'SET_PLAYLISTS',
+					playlists,
+				});
+			});
+		}
+	}, [token, dispatch]);
+
+	return (
+		<div className='app'>
+			{!token && <Login />}
+			{token && <Player spotify={s} />}
+		</div>
+	);
 }
 
 export default App;
